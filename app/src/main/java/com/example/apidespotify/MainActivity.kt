@@ -52,11 +52,11 @@ class MainActivity : AppCompatActivity() {
         //Recibimos el token de spotify
         serviceToken.getToken().enqueue(object : Callback<Token> {
             override fun onResponse(call: Call<Token>, response: Response<Token>) {
-                if(response.isSuccessful){
+                if (response.isSuccessful) {
                     println("body token: ${response.body()!!.getAccessToken()}")
                     bearer = response.body()!!.getAccessToken()
-                    getSong()
-                } else{
+                    search()
+                } else {
                     println("response token: $response")
                 }
             }
@@ -69,30 +69,21 @@ class MainActivity : AppCompatActivity() {
 
     //https://open.spotify.com/track/7kh95COsNZjnTmc6aF76n7
 
-    fun getSong(){
+    fun search() {
         //Recibimos la cancion de spotify
-        println("el bearer es $bearer")
         try {
-            service.getSong().enqueue(object: Callback<Song> {
+            service.search(
+                "Someone you loved",
+                "track",
+                "us",
+                "application/x-www-form-urlencoded",
+                "Bearer $bearer"
+            ).enqueue(object : Callback<Song> {
                 override fun onResponse(call: Call<Song>, response: Response<Song>) {
-                    if(response.isSuccessful){
-                        println("body song: ${response.body()}")
+                    if (response.isSuccessful) {
                         var song = response.body()
-                        Glide.with(this@MainActivity)
-                            .load(song?.tracks!!.items[0].album.images[0].url)
-                            .into(imagen)
-                        try {
-                            var url = "https://p.scdn.co/mp3-preview/596fa2d78816cba29f4ded436a89ca69483a65a0?cid=ad9797f1312949b59f76faaf9a709a6d"
-                            val mediaPlayer: MediaPlayer? = MediaPlayer().apply {
-                                setAudioStreamType(AudioManager.STREAM_MUSIC)
-                                setDataSource(url)
-                                prepare() // might take long! (for buffering, etc)
-                                start()
-                            }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    } else{
+                        getSong(song!!.tracks.items[0].id)
+                    } else {
                         println("error response song: $response")
                     }
                 }
@@ -101,8 +92,46 @@ class MainActivity : AppCompatActivity() {
                     t.printStackTrace()
                 }
             })
-        } catch (e: java.lang.Exception){
+        } catch (e: java.lang.Exception) {
             e.printStackTrace()
         }
+    }
+
+    fun getSong(id: String) {
+        service.getSong(id,"application/x-www-form-urlencoded", "Bearer $bearer").enqueue(object : Callback<Track> {
+            override fun onResponse(call: Call<Track>, response: Response<Track>) {
+                if (response.isSuccessful) {
+                    println("body song: ${response.body()}")
+                    var song = response.body()
+                    //var url = song!!.tracks.items[0].previewURL
+                    var url = song!!.previewURL
+                    //var urlImage = song.tracks.items[0].album.images[0].url
+                    var urlImage = song.album.images[0].url
+
+                    Glide.with(this@MainActivity)
+                        .load(urlImage)
+                        .into(imagen)
+                    try {
+                        //var url = "https://p.scdn.co/mp3-preview/596fa2d78816cba29f4ded436a89ca69483a65a0?cid=ad9797f1312949b59f76faaf9a709a6d"
+                        println("el url de la cancion es: $url")
+                        MediaPlayer().apply {
+                            setAudioStreamType(AudioManager.STREAM_MUSIC)
+                            setDataSource(url)
+                            prepare() // might take long! (for buffering, etc)
+                            start()
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                } else {
+                    println("error response song: $response")
+                }
+
+            }
+
+            override fun onFailure(call: Call<Track>, t: Throwable) {
+
+            }
+        })
     }
 }
