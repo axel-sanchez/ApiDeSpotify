@@ -10,15 +10,10 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import androidx.core.app.ComponentActivity.ExtraData
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.media.AudioManager
-import android.net.Uri
-import retrofit2.http.Headers
 
 
-val BASE_URL = "https://api.spotify.com/v1/"
+const val BASE_URL = "https://api.spotify.com/v1/"
 
 class MainActivity : AppCompatActivity() {
 
@@ -48,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         getToken()
     }
 
-    fun getToken() {
+    private fun getToken() {
         //Recibimos el token de spotify
         serviceToken.getToken().enqueue(object : Callback<Token> {
             override fun onResponse(call: Call<Token>, response: Response<Token>) {
@@ -67,8 +62,6 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    //https://open.spotify.com/track/7kh95COsNZjnTmc6aF76n7
-
     fun search() {
         //Recibimos la cancion de spotify
         try {
@@ -78,17 +71,41 @@ class MainActivity : AppCompatActivity() {
                 "us",
                 "application/x-www-form-urlencoded",
                 "Bearer $bearer"
-            ).enqueue(object : Callback<Song> {
-                override fun onResponse(call: Call<Song>, response: Response<Song>) {
+            ).enqueue(object : Callback<Root> {
+                override fun onResponse(call: Call<Root>, response: Response<Root>) {
                     if (response.isSuccessful) {
                         var song = response.body()
-                        getSong(song!!.tracks.items[0].id)
+                        var pos = 0
+
+                        var url = song!!.getTracks().getItems()[pos].getPreview_url()
+                        var urlImage = song.getTracks().getItems()[pos].getAlbum().getImages()[0].getUrl()
+
+                        while(url.isNullOrEmpty() || urlImage.isNullOrEmpty()){
+                            pos++
+                            url = song.getTracks().getItems()[pos].getPreview_url()
+                            urlImage = song.getTracks().getItems()[pos].getAlbum().getImages()[0].getUrl()
+                        }
+
+                        Glide.with(this@MainActivity)
+                            .load(urlImage)
+                            .into(imagen)
+
+                        //var url = "https://p.scdn.co/mp3-preview/596fa2d78816cba29f4ded436a89ca69483a65a0?cid=ad9797f1312949b59f76faaf9a709a6d"
+                        println("el url de la cancion es: $url")
+                        MediaPlayer().apply {
+                            setAudioStreamType(AudioManager.STREAM_MUSIC)
+                            setDataSource(url)
+                            prepare() // might take long! (for buffering, etc)
+                            start()
+                        }
+
+                        //getSong(song!!.tracks.items[0].id)
                     } else {
                         println("error response song: $response")
                     }
                 }
 
-                override fun onFailure(call: Call<Song>, t: Throwable) {
+                override fun onFailure(call: Call<Root>, t: Throwable) {
                     t.printStackTrace()
                 }
             })
@@ -98,20 +115,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun getSong(id: String) {
-        service.getSong(id,"application/x-www-form-urlencoded", "Bearer $bearer").enqueue(object : Callback<Track> {
-            override fun onResponse(call: Call<Track>, response: Response<Track>) {
-                if (response.isSuccessful) {
-                    println("body song: ${response.body()}")
-                    var song = response.body()
-                    //var url = song!!.tracks.items[0].previewURL
-                    var url = song!!.previewURL
-                    //var urlImage = song.tracks.items[0].album.images[0].url
-                    var urlImage = song.album.images[0].url
+        service.getSong(id, "application/x-www-form-urlencoded", "Bearer $bearer")
+            .enqueue(object : Callback<Track> {
+                override fun onResponse(call: Call<Track>, response: Response<Track>) {
+                    if (response.isSuccessful) {
+                        println("body song: ${response.body()}")
+                        var song = response.body()
+                        //var url = song!!.tracks.items[0].previewURL
+                        var url = song!!.previewURL
+                        //var urlImage = song.tracks.items[0].album.images[0].url
+                        var urlImage = song.album.images[0].url
 
-                    Glide.with(this@MainActivity)
-                        .load(urlImage)
-                        .into(imagen)
-                    try {
+                        Glide.with(this@MainActivity)
+                            .load(urlImage)
+                            .into(imagen)
+
                         //var url = "https://p.scdn.co/mp3-preview/596fa2d78816cba29f4ded436a89ca69483a65a0?cid=ad9797f1312949b59f76faaf9a709a6d"
                         println("el url de la cancion es: $url")
                         MediaPlayer().apply {
@@ -120,18 +138,15 @@ class MainActivity : AppCompatActivity() {
                             prepare() // might take long! (for buffering, etc)
                             start()
                         }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+                    } else {
+                        println("error response song: $response")
                     }
-                } else {
-                    println("error response song: $response")
+
                 }
 
-            }
+                override fun onFailure(call: Call<Track>, t: Throwable) {
 
-            override fun onFailure(call: Call<Track>, t: Throwable) {
-
-            }
-        })
+                }
+            })
     }
 }

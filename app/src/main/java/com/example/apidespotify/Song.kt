@@ -4,250 +4,422 @@
 
 package com.example.apidespotify
 
-import com.fasterxml.jackson.annotation.*
-import com.fasterxml.jackson.core.*
-import com.fasterxml.jackson.databind.*
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer
-import com.fasterxml.jackson.databind.module.SimpleModule
-import com.fasterxml.jackson.databind.node.*
-import com.fasterxml.jackson.databind.ser.std.StdSerializer
-import com.fasterxml.jackson.module.kotlin.*
-import kotlin.reflect.KClass
+import java.util.*
 
+class External_urls {
+    private var spotify: String = ""
 
-@Suppress("UNCHECKED_CAST")
-private fun <T> ObjectMapper.convert(k: KClass<*>, fromJson: (JsonNode) -> T, toJson: (T) -> String, isUnion: Boolean = false) = registerModule(SimpleModule().apply {
-    addSerializer(k.java as Class<T>, object : StdSerializer<T>(k.java as Class<T>) {
-        override fun serialize(value: T, gen: JsonGenerator, provider: SerializerProvider) = gen.writeRawValue(toJson(value))
-    })
-    addDeserializer(k.java as Class<T>, object : StdDeserializer<T>(k.java as Class<T>) {
-        override fun deserialize(p: JsonParser, ctxt: DeserializationContext) = fromJson(p.readValueAsTree())
-    })
-})
-
-val mapper = jacksonObjectMapper().apply {
-    propertyNamingStrategy = PropertyNamingStrategy.LOWER_CAMEL_CASE
-    setSerializationInclusion(JsonInclude.Include.NON_NULL)
-    convert(AlbumTypeEnum::class,        { AlbumTypeEnum.fromValue(it.asText()) },        { "\"${it.value}\"" })
-    convert(ArtistType::class,           { ArtistType.fromValue(it.asText()) },           { "\"${it.value}\"" })
-    convert(ReleaseDatePrecision::class, { ReleaseDatePrecision.fromValue(it.asText()) }, { "\"${it.value}\"" })
-    convert(ItemType::class,             { ItemType.fromValue(it.asText()) },             { "\"${it.value}\"" })
-}
-
-data class Song (
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val tracks: Tracks
-) {
-    fun toJson() = mapper.writeValueAsString(this)
-
-    companion object {
-        fun fromJson(json: String) = mapper.readValue<Song>(json)
+    fun setSpotify(spotify: String){
+        this.spotify = spotify
+    }
+    fun getSpotify(): String {
+        return this.spotify
     }
 }
 
-data class Tracks (
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val href: String,
+class Artists {
+    private lateinit var external_urls: External_urls
 
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val items: List<Item>,
+    private var href: String = ""
 
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val limit: Long,
+    private var id: String = ""
 
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val next: String,
+    private var name: String = ""
 
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val offset: Long,
+    private var type: String = ""
 
-    val previous: Any? = null,
+    private var uri: String = ""
 
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val total: Long
-)
-
-data class Item (
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val album: Album,
-
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val artists: List<Artist>,
-
-    @get:JsonProperty("available_markets", required=true)@field:JsonProperty("available_markets", required=true)
-    val availableMarkets: List<String>,
-
-    @get:JsonProperty("disc_number", required=true)@field:JsonProperty("disc_number", required=true)
-    val discNumber: Long,
-
-    @get:JsonProperty("duration_ms", required=true)@field:JsonProperty("duration_ms", required=true)
-    val durationMS: Long,
-
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val explicit: Boolean,
-
-    @get:JsonProperty("external_ids", required=true)@field:JsonProperty("external_ids", required=true)
-    val externalIDS: ExternalIDS,
-
-    @get:JsonProperty("external_urls", required=true)@field:JsonProperty("external_urls", required=true)
-    val externalUrls: ExternalUrls,
-
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val href: String,
-
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val id: String,
-
-    @get:JsonProperty("is_local", required=true)@field:JsonProperty("is_local", required=true)
-    val isLocal: Boolean,
-
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val name: String,
-
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val popularity: Long,
-
-    @get:JsonProperty("preview_url")@field:JsonProperty("preview_url")
-    val previewURL: String? = null,
-
-    @get:JsonProperty("track_number", required=true)@field:JsonProperty("track_number", required=true)
-    val trackNumber: Long,
-
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val type: ItemType,
-
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val uri: String
-)
-
-data class Album (
-    @get:JsonProperty("album_type", required=true)@field:JsonProperty("album_type", required=true)
-    val albumType: AlbumTypeEnum,
-
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val artists: List<Artist>,
-
-    @get:JsonProperty("available_markets", required=true)@field:JsonProperty("available_markets", required=true)
-    val availableMarkets: List<String>,
-
-    @get:JsonProperty("external_urls", required=true)@field:JsonProperty("external_urls", required=true)
-    val externalUrls: ExternalUrls,
-
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val href: String,
-
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val id: String,
-
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val images: List<Image>,
-
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val name: String,
-
-    @get:JsonProperty("release_date", required=true)@field:JsonProperty("release_date", required=true)
-    val releaseDate: String,
-
-    @get:JsonProperty("release_date_precision", required=true)@field:JsonProperty("release_date_precision", required=true)
-    val releaseDatePrecision: ReleaseDatePrecision,
-
-    @get:JsonProperty("total_tracks", required=true)@field:JsonProperty("total_tracks", required=true)
-    val totalTracks: Long,
-
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val type: AlbumTypeEnum,
-
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val uri: String
-)
-
-enum class AlbumTypeEnum(val value: String) {
-    Album("album"),
-    Compilation("compilation"),
-    Single("single");
-
-    companion object {
-        fun fromValue(value: String): AlbumTypeEnum = when (value) {
-            "album"       -> Album
-            "compilation" -> Compilation
-            "single"      -> Single
-            else          -> throw IllegalArgumentException()
-        }
+    fun setExternal_urls(external_urls: External_urls) {
+        this.external_urls = external_urls
+    }
+    fun getExternal_urls(): External_urls {
+        return this.external_urls
+    }
+    fun setHref(href: String) {
+        this.href = href
+    }
+    fun getHref(): String {
+        return this.href
+    }
+    fun setId(id: String) {
+        this.id = id
+    }
+    fun getId(): String {
+        return this.id
+    }
+    fun setName(name: String) {
+        this.name = name
+    }
+    fun getName(): String {
+        return this.name
+    }
+    fun setType(type: String) {
+        this.type = type
+    }
+    fun getType(): String {
+        return this.type
+    }
+    fun setUri(uri: String) {
+        this.uri = uri
+    }
+    fun getUri(): String {
+        return this.uri
     }
 }
 
-data class Artist (
-    @get:JsonProperty("external_urls", required=true)@field:JsonProperty("external_urls", required=true)
-    val externalUrls: ExternalUrls,
+class Images {
+    private var height: Int = 0
 
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val href: String,
+    private var url: String = ""
 
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val id: String,
+    private var width: Int = 0
 
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val name: String,
-
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val type: ArtistType,
-
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val uri: String
-)
-
-data class ExternalUrls (
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val spotify: String
-)
-
-enum class ArtistType(val value: String) {
-    Artist("artist");
-
-    companion object {
-        fun fromValue(value: String): ArtistType = when (value) {
-            "artist" -> Artist
-            else     -> throw IllegalArgumentException()
-        }
+    fun setHeight(height: Int) {
+        this.height = height
+    }
+    fun getHeight(): Int {
+        return this.height
+    }
+    fun setUrl(url: String) {
+        this.url = url
+    }
+    fun getUrl(): String {
+        return this.url
+    }
+    fun setWidth(width: Int) {
+        this.width = width
+    }
+    fun getWidth(): Int {
+        return this.width
     }
 }
 
-data class Image (
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val height: Long,
 
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val url: String,
+class Album {
+    private var album_type: String = ""
 
-    @get:JsonProperty(required=true)@field:JsonProperty(required=true)
-    val width: Long
-)
+    private lateinit var artists: List<Artists>
 
-enum class ReleaseDatePrecision(val value: String) {
-    Day("day"),
-    Year("year");
+    private lateinit var available_markets: List<String>
 
-    companion object {
-        fun fromValue(value: String): ReleaseDatePrecision = when (value) {
-            "day"  -> Day
-            "year" -> Year
-            else   -> throw IllegalArgumentException()
-        }
+    private lateinit var external_urls: External_urls
+
+    private var href: String = ""
+
+    private var id: String = ""
+
+    private lateinit var images: List<Images>
+
+    private var  name: String = ""
+
+    private lateinit var release_date: Date
+
+    private var release_date_precision: String = ""
+
+    private var total_tracks: Int = 0
+
+    private var type: String = ""
+
+    private var uri: String = ""
+
+    fun setAlbum_type(album_type: String) {
+        this.album_type = album_type
+    }
+    fun getAlbum_type(): String {
+        return this.album_type
+    }
+    fun setArtists(artists: List<Artists>) {
+        this.artists = artists
+    }
+    fun getArtists(): List<Artists> {
+        return this.artists
+    }
+    fun setAvailable_markets(available_markets: List<String>) {
+        this.available_markets = available_markets
+    }
+    fun getAvailable_markets(): List<String> {
+        return this.available_markets
+    }
+    fun setExternal_urls(external_urls: External_urls) {
+        this.external_urls = external_urls
+    }
+    fun getExternal_urls(): External_urls {
+        return this.external_urls
+    }
+    fun setHref(href: String) {
+        this.href = href
+    }
+    fun getHref(): String {
+        return this.href
+    }
+    fun setId(id: String) {
+        this.id = id
+    }
+    fun getId(): String {
+        return this.id
+    }
+    fun setImages(images: List<Images>) {
+        this.images = images
+    }
+    fun getImages(): List<Images> {
+        return this.images
+    }
+    fun setName(name: String) {
+        this.name = name
+    }
+    fun getName(): String {
+        return this.name
+    }
+    fun setRelease_date(release_date: Date) {
+        this.release_date = release_date
+    }
+    fun getRelease_date(): Date {
+        return this.release_date
+    }
+    fun setRelease_date_precision(release_date_precision: String) {
+        this.release_date_precision = release_date_precision
+    }
+    fun getRelease_date_precision(): String {
+        return this.release_date_precision
+    }
+    fun setTotal_tracks(total_tracks: Int) {
+        this.total_tracks = total_tracks
+    }
+    fun getTotal_tracks(): Int {
+        return this.total_tracks
+    }
+    fun setType(type: String) {
+        this.type = type
+    }
+    fun getType(): String {
+        return this.type
+    }
+    fun setUri(uri: String) {
+        this.uri = uri
+    }
+    fun getUri(): String {
+        return this.uri
     }
 }
 
-data class ExternalIDS (
-    @get:JsonProperty("isrc", required=true)@field:JsonProperty("isrc", required=true)
-    val isrc: String
-)
 
-enum class ItemType(val value: String) {
-    Track("track");
+class External_ids {
+    private var isrc: String = ""
 
-    companion object {
-        fun fromValue(value: String): ItemType = when (value) {
-            "track" -> Track
-            else    -> throw IllegalArgumentException()
-        }
+    fun setIsrc(isrc: String) {
+        this.isrc = isrc
+    }
+    fun getIsrc(): String {
+        return this.isrc
+    }
+}
+
+class Items {
+    private lateinit var album: Album
+
+    private lateinit var artists: List<Artists>
+
+    private lateinit var available_markets: List<String>
+
+    private var disc_number: Int = 0
+
+    private var duration_ms: Int = 0
+
+    private var explicit: Boolean = false
+
+    private lateinit var external_ids: External_ids
+
+    private lateinit var external_urls: External_urls
+
+    private var href: String = ""
+
+    private var id: String = ""
+
+    private var is_local: Boolean = false
+
+    private var name: String = ""
+
+    private var popularity: Int = 0
+
+    private var preview_url: String = ""
+
+    private var track_number: Int = 0
+
+    private var type: String = ""
+
+    private var uri: String = ""
+
+    fun setAlbum(album: Album) {
+        this.album = album
+    }
+    fun getAlbum(): Album {
+        return this.album
+    }
+    fun setArtists(artists: List<Artists>) {
+        this.artists = artists
+    }
+    fun getArtists(): List<Artists> {
+        return this.artists
+    }
+    fun setAvailable_markets(available_markets: List<String>) {
+        this.available_markets = available_markets
+    }
+    fun getAvailable_markets(): List<String> {
+        return this.available_markets
+    }
+    fun setDisc_number(disc_number: Int) {
+        this.disc_number = disc_number
+    }
+    fun getDisc_number(): Int {
+        return this.disc_number
+    }
+    fun setDuration_ms(duration_ms: Int) {
+        this.duration_ms = duration_ms
+    }
+    fun getDuration_ms(): Int {
+        return this.duration_ms
+    }
+    fun setExplicit(explicit: Boolean) {
+        this.explicit = explicit
+    }
+    fun getExplicit(): Boolean {
+        return this.explicit
+    }
+    fun setExternal_ids(external_ids: External_ids) {
+        this.external_ids = external_ids
+    }
+    fun getExternal_ids(): External_ids {
+        return this.external_ids
+    }
+    fun setExternal_urls(external_urls: External_urls) {
+        this.external_urls = external_urls
+    }
+    fun getExternal_urls(): External_urls {
+        return this.external_urls
+    }
+    fun setHref(href: String) {
+        this.href = href
+    }
+    fun getHref(): String{
+        return this.href
+    }
+    fun setId(id: String) {
+        this.id = id
+    }
+    fun getId(): String {
+        return this.id
+    }
+    fun setIs_local(is_local: Boolean) {
+        this.is_local = is_local
+    }
+    fun getIs_local(): Boolean {
+        return this.is_local
+    }
+    fun setName(name: String) {
+        this.name = name
+    }
+    fun getName(): String {
+        return this.name
+    }
+    fun setPopularity(popularity: Int) {
+        this.popularity = popularity
+    }
+    fun getPopularity(): Int {
+        return this.popularity
+    }
+    fun setPreview_url(preview_url: String) {
+        this.preview_url = preview_url
+    }
+    fun getPreview_url(): String {
+        return this.preview_url
+    }
+    fun setTrack_number(track_number: Int){
+        this.track_number = track_number
+    }
+    fun getTrack_number(): Int{
+        return this.track_number
+    }
+    fun setType(type: String){
+        this.type = type
+    }
+    fun getType(): String{
+        return this.type
+    }
+    fun setUri(uri: String){
+        this.uri = uri
+    }
+    fun getUri(): String{
+        return this.uri
+    }
+}
+
+class Tracks {
+    private var href: String = ""
+
+    private lateinit var items: List<Items>
+
+    private var limit: Int = 0
+
+    private var next: String = ""
+
+    private var offset: Int = 0
+
+    private var previous: String = ""
+
+    private var total = 0
+
+    fun setHref(href: String) {
+        this.href = href
+    }
+    fun getHref(): String {
+        return this.href
+    }
+    fun setItems(items: List<Items>) {
+        this.items = items
+    }
+    fun getItems(): List<Items>{
+        return this.items
+    }
+    fun setLimit(limit: Int){
+        this.limit = limit
+    }
+    fun getLimit(): Int{
+        return this.limit
+    }
+    fun setNext(next: String){
+        this.next = next
+    }
+    fun getNext(): String{
+        return this.next
+    }
+    fun setOffset(offset: Int){
+        this.offset = offset
+    }
+    fun getOffset(): Int{
+        return this.offset
+    }
+    fun setPrevious(previous: String){
+        this.previous = previous
+    }
+    fun getPrevious(): String{
+        return this.previous
+    }
+    fun setTotal(total: Int){
+        this.total = total
+    }
+    fun getTotal(): Int{
+        return this.total
+    }
+}
+
+class Root {
+    private lateinit var tracks: Tracks
+
+    fun setTracks(tracks: Tracks ) {
+        this.tracks = tracks
+    }
+    fun getTracks(): Tracks {
+        return this.tracks
     }
 }

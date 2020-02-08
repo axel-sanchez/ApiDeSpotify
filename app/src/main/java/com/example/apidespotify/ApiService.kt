@@ -10,7 +10,7 @@ interface ApiService {
     fun getToken(): Call<Token>
 
     @GET("search")
-    fun search(@Query("q") name: String, @Query("type") type: String, @Query("market") market: String, @Header("Content-Type") contentType: String, @Header("Authorization") token: String): Call<Song>
+    fun search(@Query("q") name: String, @Query("type") type: String, @Query("market") market: String, @Header("Content-Type") contentType: String, @Header("Authorization") token: String): Call<Root>
 
     @GET("tracks/{id}?market=us")
     fun getSong(@Path("id") id: String, @Header("Content-Type") contentType: String, @Header("Authorization") token: String): Call<Track>
