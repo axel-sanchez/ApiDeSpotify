@@ -1,4 +1,4 @@
-package com.example.apidespotify
+package com.example.apidespotify.data.models
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName

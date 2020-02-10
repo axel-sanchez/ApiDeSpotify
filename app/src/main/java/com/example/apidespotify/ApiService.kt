@@ -1,5 +1,9 @@
 package com.example.apidespotify
 
+import com.example.apidespotify.data.models.FeaturedPlaylist
+import com.example.apidespotify.data.models.Root
+import com.example.apidespotify.data.models.Token
+import com.example.apidespotify.data.models.Track
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -14,5 +18,8 @@ interface ApiService {
 
     @GET("tracks/{id}?market=us")
     fun getSong(@Path("id") id: String, @Header("Content-Type") contentType: String, @Header("Authorization") token: String): Call<Track>
+
+    @GET("browse/featured-playlists")
+    fun getFeaturedPlaylists(@Header("Authorization") token: String): Call<FeaturedPlaylist>
 
 }

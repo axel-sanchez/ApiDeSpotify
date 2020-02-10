@@ -11,14 +11,28 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import android.media.AudioManager
+import android.os.Build
+import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.apidespotify.data.models.*
+import com.example.apidespotify.ui.view.adapter.PlaylistAdapter
+import java.lang.Exception
 
 
 const val BASE_URL = "https://api.spotify.com/v1/"
 
+@RequiresApi(Build.VERSION_CODES.N)
 class MainActivity : AppCompatActivity() {
 
-    lateinit var serviceToken: ApiService
-    lateinit var service: ApiService
+    private lateinit var serviceToken: ApiService
+    private lateinit var service: ApiService
+
+    private var listItems = mutableListOf<Item>()
+
+    private lateinit var viewAdapter: RecyclerView.Adapter<*>
+    private lateinit var viewManager: RecyclerView.LayoutManager
 
     var bearer = ""
 
@@ -50,7 +64,9 @@ class MainActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     println("body token: ${response.body()!!.getAccessToken()}")
                     bearer = response.body()!!.getAccessToken()
-                    search()
+                    //search()
+
+                    getFeaturedPlaylists()
                 } else {
                     println("response token: $response")
                 }
@@ -60,6 +76,34 @@ class MainActivity : AppCompatActivity() {
                 t.printStackTrace()
             }
         })
+    }
+
+    fun getFeaturedPlaylists() {
+        try {
+            service.getFeaturedPlaylists(
+                "Bearer $bearer"
+            ).enqueue(object : Callback<FeaturedPlaylist> {
+                override fun onResponse(call: Call<FeaturedPlaylist>, response: Response<FeaturedPlaylist>) {
+                    if (response.isSuccessful) {
+                        var body = response.body()
+
+                        listItems = body!!.getPlaylists().getItems().toMutableList()
+
+                        listItems.removeIf { x -> x.getImages()[0].getUrl().isNullOrEmpty() }
+
+                        setAdapter()
+                    } else {
+                        println("error response song: $response")
+                    }
+                }
+
+                override fun onFailure(call: Call<FeaturedPlaylist>, t: Throwable) {
+                    t.printStackTrace()
+                }
+            })
+        }catch (e: Exception){
+            e.printStackTrace()
+        }
     }
 
     fun search() {
@@ -109,7 +153,7 @@ class MainActivity : AppCompatActivity() {
                     t.printStackTrace()
                 }
             })
-        } catch (e: java.lang.Exception) {
+        } catch (e: Exception) {
             e.printStackTrace()
         }
     }
@@ -148,5 +192,27 @@ class MainActivity : AppCompatActivity() {
 
                 }
             })
+    }
+
+    fun setAdapter() {
+        viewAdapter = PlaylistAdapter(listItems) { itemClick(it) }
+
+        viewManager = GridLayoutManager(applicationContext, 2)
+
+        playlists.apply {
+            // use this setting to improve performance if you know that changes
+            // in content do not change the layout size of the RecyclerView
+            setHasFixedSize(true)
+
+            // use a linear layout manager
+            layoutManager = viewManager
+
+            // specify an viewAdapter (see also next example)
+            adapter = viewAdapter
+        }
+    }
+
+    private fun itemClick(playlist: Item){
+        Toast.makeText(applicationContext, "Presionó la lista ${playlist.getName()}", Toast.LENGTH_SHORT).show()
     }
 }

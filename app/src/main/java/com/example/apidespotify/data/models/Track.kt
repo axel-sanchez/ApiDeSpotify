@@ -2,15 +2,10 @@
 //
 //   val track = Track.fromJson(jsonString)
 
-package com.example.apidespotify
+package com.example.apidespotify.data.models
 
 import com.fasterxml.jackson.annotation.*
-import com.fasterxml.jackson.core.*
 import com.fasterxml.jackson.databind.*
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer
-import com.fasterxml.jackson.databind.module.SimpleModule
-import com.fasterxml.jackson.databind.node.*
-import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.module.kotlin.*
 
 val mapperTrack = jacksonObjectMapper().apply {

@@ -2,7 +2,7 @@
 //
 //   val song = Song.fromJson(jsonString)
 
-package com.example.apidespotify
+package com.example.apidespotify.data.models
 
 import java.util.*
 
@@ -416,7 +416,7 @@ class Tracks {
 class Root {
     private lateinit var tracks: Tracks
 
-    fun setTracks(tracks: Tracks ) {
+    fun setTracks(tracks: Tracks) {
         this.tracks = tracks
     }
     fun getTracks(): Tracks {
