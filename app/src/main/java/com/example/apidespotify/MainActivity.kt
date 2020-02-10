@@ -214,5 +214,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun itemClick(playlist: Item){
         Toast.makeText(applicationContext, "Presionó la lista ${playlist.getName()}", Toast.LENGTH_SHORT).show()
+        println("El id de la playlist presionada es ${playlist.getId()}")
     }
 }
